@@ -59,8 +59,8 @@ const documentSchema = new mongoose.Schema({
 
 })
 
-// Index to optimize queries by userID and title
-documentSchema.index({ userID: 1, uploadDate });
+// Index to optimize queries by userID and uploadDate
+documentSchema.index({ userID: 1, uploadDate: 1 });
 
 const Document = mongoose.model('Document', documentSchema);
 
