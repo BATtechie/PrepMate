@@ -101,7 +101,7 @@ export const getDocuments = async (req, res, next) => {
                 $lookup: {
                     from: 'flashcards',
                     localField: '_id',
-                    foreignField: 'documentId',
+                    foreignField: 'documentID',
                     as: 'flashcardSet'
                 }
             },
@@ -109,7 +109,7 @@ export const getDocuments = async (req, res, next) => {
                 $lookup: {
                     from : 'quizzes',
                     localField: '_id',
-                    foreignField: 'documentId',
+                    foreignField: 'documentID',
                     as: 'quizzes'
                 }
             },

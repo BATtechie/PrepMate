@@ -3,10 +3,10 @@ import Flashcard from '../models/Flashcard.js';
 export const getFlashcards = async (req, res, next) => {
     try {
         const flashcards = await Flashcard.find({
-            userId: req.user._id,
-            documentId: req.params.documentId
+            userID: req.user._id,
+            documentID: req.params.documentID
         })
-         .populate('documentId', 'title fileName')
+         .populate('documentID', 'title fileName')
          .sort({ createdAt: -1 });
          
         res.status(200).json({
@@ -22,8 +22,8 @@ export const getFlashcards = async (req, res, next) => {
 
 export const getAllFlashcardSets = async (req, res, next) => {
     try {
-        const flashcardSets = await Flashcard.find({ userId: req.user._id})
-            .populate('document', 'title')
+        const flashcardSets = await Flashcard.find({ userID: req.user._id})
+            .populate('documentID', 'title')
             .sort({ createdAt: -1})
         res.status(200).json({
             success: true,
@@ -40,13 +40,14 @@ export const reviewFlashcard = async (req, res, next) => {
     try {
         const flashcardSet = await Flashcard.findOne({
             'cards._id': req.params.cardId,
-            userId: req.user._id,
+            userID: req.user._id,
         })
 
         if(!flashcardSet){
             return res.status(404).json({
                 success: false,
-                error: 'Flashcard set or card not found'
+                error: 'Flashcard set or card not found',
+                statusCode:404,
             })
         }
 
@@ -80,7 +81,7 @@ export const toggleStarFlashcard = async (req, res, next) => {
     try {
         const flashcardSet = await Flashcard.findOne({
             'cards._id': req.params.cardId,
-            userId: req.user._id
+            userID: req.user._id
         })
 
         if(!flashcardSet){
@@ -118,8 +119,8 @@ export const toggleStarFlashcard = async (req, res, next) => {
 export const deleteFlashcardSet = async (req, res, next) => {
     try {
         const flashcardSet = await Flashcard.findOne({
-            _id: req.param._id,
-            userId: req.user._id
+            _id: req.params.id,
+            userID: req.user._id
         })
 
         if(!flashcardSet){

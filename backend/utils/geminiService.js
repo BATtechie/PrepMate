@@ -1,6 +1,5 @@
 import dotenv from 'dotenv';
-import { GoogleGenAI } from '@google/genai';
-import { model } from 'mongoose';
+import { GoogleGenAI } from '@google/genai'; 
 
 dotenv.config();
 
@@ -39,7 +38,7 @@ export const generateFlashcards = async (text, count=10) => {
         const cards = generatedText.split('---').filter(c => c.trim());
 
         for(const card of cards){
-            const lines = cards.trim().aplit('\n')
+            const lines = card.trim().split('\n')
             let question = '', answer = '', difficulty='medium';
 
             for(const line of lines){
@@ -68,7 +67,7 @@ export const generateFlashcards = async (text, count=10) => {
 /** 
  * @param { string} text
  * @param {number} numQuestions
- * @return {Promise<Array<{question: string, options: Array, correctAnswer:string, explanation:string, difficulty: string}>>}
+ * @return {Promise<Array<{question: string, options: Array, correctAnswer: string, explanation: string, difficulty: string}>>}
 */
 export const generateQuiz = async (text, numQuestions = 5)=>{
     const prompt = `Generate exactly ${numQuestions} multiple choice from thr following text.
@@ -143,7 +142,7 @@ export const generateSummary = async (text) =>{
     ${text.substring(0,20000)}`
 
     try{
-        const response = await ai.module.generateContent({
+        const response = await ai.models.generateContent({
             model: "gemini-2.5-flash-lite",
             contents: prompt
         })
