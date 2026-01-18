@@ -68,22 +68,22 @@ export const uploadDocument = async (req, res, next) => {
 
 // Helper function
 
-const processPDF = async (documentId, filePath) => {
+const processPDF = async (documentID, filePath) => {
     try{
         const { text } = await extractTextFromPDF(filePath);
 
         const chunks = chunkText(text, 500, 50);
 
-        await Document.findByIdAndUpdate(documentId, {
+        await Document.findByIdAndUpdate(documentID, {
             extractedText: text,
             chunks: chunks,
             status: 'ready'
         });
-        console.log(`Document ${documentId} processed successfully.`);
+        console.log(`Document ${documentID} processed successfully.`);
     } catch(error){
-        console.error(`Error processing document ${documentId}:`, error);
+        console.error(`Error processing document ${documentID}:`, error);
 
-        await Document.findByIdAndUpdate(documentId, {
+        await Document.findByIdAndUpdate(documentID, {
             status: 'failed'
         });
     }
@@ -163,8 +163,8 @@ export const getDocument = async (req, res, next) => {
         }
 
         // Get counts of associated flashcards and quizzes
-        const flashcardCount = await Flashcard.countDocuments({ documentId: document._id, userId: req.user._id });
-        const quizCount = await Quiz.countDocuments({ documentId: document._id, userId: req.user._id });
+        const flashcardCount = await Flashcard.countDocuments({ documentID: document._id, userID: req.user._id });
+        const quizCount = await Quiz.countDocuments({ documentID: document._id, userID: req.user._id });
 
         document.lastAccessed = Date.now();
         await document.save();

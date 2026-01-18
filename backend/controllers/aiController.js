@@ -5,11 +5,13 @@ import ChatHistory from '../models/ChatHistory.js';
 import * as geminiService from '../utils/geminiService.js';
 import { findRelevantChunks } from '../utils/textChunker.js';
 import { Chat } from '@google/genai';
+import errorHandler from '../middleware/errorHandler.js';
 
 
 export const generateFlashcards = async (req, res, next) => {
     try {
         const { documentID, count=10 } = req.body
+        const { userAnswers, ...rest } = req.body;
         if(!documentID){
             return res.status(400).json({
                 success:false,
@@ -193,7 +195,7 @@ export const chat = async (req, res, next) => {
         }
 
         const answer = await geminiService.chatWithContext(question, releventChunks);
-        // there was an error thats why i added sender path
+        // there was an error thats why i added sender path, it will help to identify who sent what in future
             chatHistory.messages.push(
                 {
                     sender: 'user',
@@ -228,7 +230,44 @@ export const chat = async (req, res, next) => {
 
 export const explainConcept = async (req, res, next) => {
     try {
+        const { documentID, concept } = req.body;
 
+        if(!documentID || !concept){
+            return res.status(400).json({
+                success:false,
+                error: 'Please provide documentID and concept',
+                statusCode:400
+            })
+        };
+
+        const document = await Document.findOne({
+            _id: documentID,
+            userID: req.user._id,
+            status:'ready'
+        })
+
+        if(!document){
+            return res.status(404).json({
+                success:false,
+                error: 'Document not found or ready',
+                statusCode:404
+            })
+        }
+
+        const releventChunks = findRelevantChunks(document.chunks, concept, 3);
+        const context = releventChunks.map(c => c.content).join('\n\n');
+
+        const explaination = await geminiService.explainConcept(concept, context);
+
+        res.status(200).json({
+            success:true,
+            data: {
+                concept,
+                explaination,
+                releventChunks: releventChunks.map(c => c.chunkIndex)
+            },
+            message: 'Explanation generated successfully'
+        });
     } catch (error){
          next(error)
     }
@@ -237,7 +276,34 @@ export const explainConcept = async (req, res, next) => {
 
 export const getChatHistory = async (req, res, next) => {
     try {
+        const { documentID } = req.params;
 
+        if(!documentID){
+            return res.status(400).json({
+                success:false,
+                error: 'Please Provide documentID',
+                statusCode:400
+            })
+        }
+
+        const chatHistory = await ChatHistory.findOne({
+            userID: req.user._id,
+            documentID: documentID
+        }).select('messages') // Only retrieve the messages array
+
+        if(!chatHistory){
+            return res.status(200).json({
+                success: true,
+                data: [],
+                message: 'No chat history found for this document'
+            })
+        }
+        res.status(200).json({
+            success:true,
+            data: chatHistory.messages,
+            message: 'Chat history retrieved successfully'
+
+        });
     } catch (error){
          next(error)
     }

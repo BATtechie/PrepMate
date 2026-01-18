@@ -166,7 +166,7 @@ export const findRelevantChunks = (chunks, query, maxChunks = 3) => {
             _id: chunk._id,
             score: normalizedScore * positionBonus,
             rewScore: score,
-            matchedWords: uniqueWordsFound
+            matchedWords: uniqueWordsFound 
         }
     })
 
